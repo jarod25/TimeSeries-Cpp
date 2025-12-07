@@ -3,16 +3,39 @@
 
 using namespace std;
 
+TimeSeriesDataset::TimeSeriesDataset(bool znormalize, bool isTrain)
+{
+    this->znormalize = znormalize;
+    this->isTrain = isTrain;
+    this->maxLength = 0;
+    this->numberOfSamples = 0;
+}
+
 void TimeSeriesDataset::addTimeSeries(const vector<double>& series, int label)
 {
-    data.push_back(series);
+    vector<double> s = series;
+
+    if (znormalize) {
+        s = zNormalize(series);
+    }
+
+    data.push_back(s);
     labels.push_back(label);
+
+    numberOfSamples++;
+
+    if ((int)s.size() > maxLength) {
+        maxLength = (int)s.size();
+    }
 }
 
 double TimeSeriesDataset::mean(const vector<double>& series)
 {
-    double sum = 0.0;
+    if (series.empty()) {
+        return 0.0;
+    }
 
+    double sum = 0.0;
     for (double v : series) {
         sum += v;
     }
@@ -22,15 +45,17 @@ double TimeSeriesDataset::mean(const vector<double>& series)
 
 double TimeSeriesDataset::stddev(const vector<double>& series, double m)
 {
-    double sum = 0.0;
+    if (series.empty()) {
+        return 0.0;
+    }
 
+    double sum = 0.0;
     for (double v : series) {
         double diff = v - m;
         sum += diff * diff;
     }
 
     double variance = sum / series.size();
-
     return sqrt(variance);
 }
 
@@ -39,11 +64,15 @@ vector<double> TimeSeriesDataset::zNormalize(const vector<double>& series)
     vector<double> result;
     result.reserve(series.size());
 
+    if (series.empty()) {
+        return result;
+    }
+
     double m = mean(series);
     double s = stddev(series, m);
 
-    if (s == 0) {
-        // Tous les éléments sont identiques → série plate
+    if (s == 0.0) {
+        // Série plate : tout identique → on renvoie des 0
         for (int i = 0; i < (int)series.size(); i++) {
             result.push_back(0.0);
         }
@@ -65,7 +94,7 @@ void TimeSeriesDataset::normalizeAll()
     }
 }
 
-const vector<double>& TimeSeriesDataset::getSeries(int index)
+const vector<double>& TimeSeriesDataset::getSeries(int index) const
 {
     return data[index];
 }
@@ -77,5 +106,10 @@ int TimeSeriesDataset::getLabel(int index) const
 
 int TimeSeriesDataset::getSize() const
 {
-    return data.size();
+    return numberOfSamples;
+}
+
+int TimeSeriesDataset::getMaxLength() const
+{
+    return maxLength;
 }

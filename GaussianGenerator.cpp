@@ -9,13 +9,17 @@ using namespace std;
 #define M_PI 3.14159265358979323846
 #endif
 
-GaussianGenerator::GaussianGenerator(const int seed, const double mean, const double stdDev)
+// Destructeur (obligatoire car déclaré dans le .h)
+GaussianGenerator::~GaussianGenerator() = default;
+
+// Constructeur
+GaussianGenerator::GaussianGenerator(int seed, double mean, double stdDev)
     : TimeSeriesGenerator(seed), mean(mean), stdDev(stdDev)
 {
     srand(seed);
 }
 
-
+// Méthode Box-Muller pour générer une valeur gaussienne
 double GaussianGenerator::boxMuller() const
 {
     double u1 = 0.0;
@@ -24,12 +28,13 @@ double GaussianGenerator::boxMuller() const
     u1 = (rand() + 1.0) / (RAND_MAX + 2.0);
     u2 = (rand() + 1.0) / (RAND_MAX + 2.0);
 
-    const double z = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
+    double z = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
 
     return mean + z * stdDev;
 }
 
-vector<double> GaussianGenerator::generateTimeSeries(const int size)
+// Génération d'une série temporelle de taille "size"
+vector<double> GaussianGenerator::generateTimeSeries(int size)
 {
     vector<double> result;
     result.reserve(size);

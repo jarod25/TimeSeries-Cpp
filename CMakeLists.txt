@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.1)
+cmake_minimum_required(VERSION 4.0)
 project(TimeSeries_Cpp)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -13,4 +13,5 @@ add_executable(TimeSeries_Cpp
         SinWaveGenerator.cpp
         TimeSeriesDataset.cpp
         Distance.cpp
+        KNN.cpp
 )
